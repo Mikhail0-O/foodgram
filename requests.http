@@ -14,3 +14,4 @@ Content-Type: application/json
 ###
 GET http://127.0.0.1:8000/api/v1/recipes/
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1MTI5ODQ3LCJqdGkiOiJjNzlmMTkzMmZmYzI0Y2NiYmZjZGIwNDExODMwOGZiNyIsInVzZXJfaWQiOjF9.knBWK2aUoQtO9KtlLfq_xka06Fd20-KKfV7Y0SlXKTw
+№
