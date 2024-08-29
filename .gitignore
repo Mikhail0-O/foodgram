@@ -142,4 +142,4 @@ static/
 media/
 
 #Файлы для отладки
-requests.http
+request.http
