@@ -93,7 +93,8 @@ class Ingredient(models.Model):
 class Cart(models.Model):
     recipe = models.ManyToManyField(
         Recipe,
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
+        blank=True,
     )
     author = models.ForeignKey(
         User,
@@ -112,7 +113,8 @@ class Cart(models.Model):
 class Favourites(models.Model):
     recipe = models.ManyToManyField(
         Recipe,
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
+        blank=True,
     )
     author = models.ForeignKey(
         User,
