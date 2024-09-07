@@ -6,9 +6,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from django.http import HttpResponse
+from django.db.models import Sum
 
-from recipes.models import Recipe, Tag, Ingredient, Favourite
-from .serializers import RecipeSerializer, TokenSerializer, TagSerializer, IngredientSerializer, RecipeShortSerializer, FavouriteSerializer
+from recipes.models import Recipe, Tag, Ingredient, Favourite, Cart
+from .serializers import (RecipeSerializer, TokenSerializer,
+                          TagSerializer, IngredientSerializer,
+                          FavouriteSerializer, CartSerializer)
 from users.get_tokens_for_user import get_tokens_for_user
 from .permissions import IsAuthorOrReadOnly
 
@@ -55,6 +59,36 @@ class FavouriteViewSet(viewsets.ModelViewSet):
             )
 
 
+class CartViewSet(viewsets.ModelViewSet):
+    queryset = Cart.objects.all().order_by('id')
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthorOrReadOnly]
+
+    def destroy(self, request, *args, **kwargs):
+        recipe_id = self.kwargs.get('recipe_id')
+        try:
+            favourite = Cart.objects.get(
+                recipe_id=recipe_id, author=request.user
+            )
+            favourite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Cart.DoesNotExist:
+            return Response(
+                {'detail': 'Корзина не найдена.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    # def retrieve(self, request, *args, **kwargs):
+    #     # instance = self.get_object()
+    #     # serializer = self.get_serializer(instance)
+    #     response = HttpResponse(
+    #         ['shopping_list'], content_type='text.txt; charset=utf-8'
+    #     )
+    #     filename = '_shopping_list.txt'
+    #     response['Content-Disposition'] = f'attachment; filename={filename}'
+    #     return response
+
+
 @api_view(['POST'])
 def get_token(request):
     serializer = TokenSerializer(data=request.data)
@@ -64,3 +98,29 @@ def get_token(request):
     ).first()
     tokens = get_tokens_for_user(user)
     return Response(tokens, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def download_shopping_cart(request):
+    user = request.user
+    if not user.carts.exists():
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    ingredients = user.carts.all().values(
+        'recipe__ingredient__measurement_unit',
+        'recipe__ingredient__name'
+    ).annotate(
+        amount=Sum('recipe__ingredient__amount')
+    ).order_by('recipe__ingredient__measurement_unit')
+    shopping_list = []
+    shopping_list += '\n'.join([
+        f'- {ingredient["recipe__ingredient__name"]} '
+        f'({ingredient["recipe__ingredient__measurement_unit"]}) '
+        f'— ({ingredient["amount"]})'
+        for ingredient in ingredients
+    ])
+    response = HttpResponse(
+        shopping_list, content_type='text.txt; charset=utf-8'
+    )
+    filename = 'shopping_list.txt'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    return response

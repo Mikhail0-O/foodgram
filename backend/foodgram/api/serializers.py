@@ -5,6 +5,7 @@ import re
 
 from recipes.models import Recipe, Tag, Ingredient, Cart, Favourite
 from .exceptions import CustomValidation
+# from .mixins import CreateRepresentationMixin
 
 
 User = get_user_model()
@@ -106,15 +107,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
             'cooking_time'
         )
 
-
-class FavouriteSerializer(serializers.ModelSerializer):
-    recipe = RecipeShortSerializer(read_only=True)
-
-    class Meta:
-        model = Favourite
-        fields = ('recipe',)
-        read_only_fields = ('recipe',)
-
+class CreateRepresentationMixin:
     def to_representation(self, instance):
         recipe_data = RecipeShortSerializer(instance.recipe).data
         return recipe_data
@@ -130,6 +123,16 @@ class FavouriteSerializer(serializers.ModelSerializer):
             validated_data['recipe'] = recipe
         return super().create(validated_data)
 
+
+class FavouriteSerializer(CreateRepresentationMixin,
+                          serializers.ModelSerializer):
+    recipe = RecipeShortSerializer(read_only=True)
+
+    class Meta:
+        model = Favourite
+        fields = ('recipe',)
+        read_only_fields = ('recipe',)
+
     def validate(self, data):
         # Проверяем, чтобы рецепт не был уже добавлен в избранное
         recipe_id = (
@@ -138,5 +141,26 @@ class FavouriteSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.get(id=recipe_id)
         user = self.context['request'].user
         if Favourite.objects.filter(author=user, recipe=recipe).exists():
+            raise serializers.ValidationError("Этот рецепт уже в избранном.")
+        return data
+
+
+class CartSerializer(CreateRepresentationMixin,
+                     serializers.ModelSerializer):
+    recipe = RecipeShortSerializer(read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ('recipe',)
+        read_only_fields = ('recipe',)
+
+    def validate(self, data):
+        # Проверяем, чтобы рецепт не был уже добавлен в избранное
+        recipe_id = (
+            self.context['request'].parser_context['kwargs']['recipe_id']
+        )
+        recipe = Recipe.objects.get(id=recipe_id)
+        user = self.context['request'].user
+        if Cart.objects.filter(author=user, recipe=recipe).exists():
             raise serializers.ValidationError("Этот рецепт уже в избранном.")
         return data

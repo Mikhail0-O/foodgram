@@ -14,6 +14,7 @@ class Recipe(models.Model):
     description = models.TextField('Описание рецепта')
     author = models.ForeignKey(
         User,
+        related_name='recipes',
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта'
     )
@@ -26,6 +27,7 @@ class Recipe(models.Model):
     )
     ingredient = models.ManyToManyField(
         'Ingredient',
+        related_name='recipes',
         verbose_name='Ингредиент'
     )
     image = models.ImageField('Фото', blank=True)
@@ -68,7 +70,6 @@ class Ingredient(models.Model):
     measurement_unit = models.CharField(
         max_length=MAX_LEN_NAME,
         verbose_name='Единицы измерения',
-        unique=True
     )
     amount = models.IntegerField(
         verbose_name='Количество'
@@ -86,18 +87,23 @@ class Cart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        related_name='carts',
         verbose_name='Рецепт',
-        blank=True,
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name='carts',
         verbose_name='Автор корзины'
     )
 
     class Meta:
         verbose_name = 'корзина'
         verbose_name_plural = 'Корзины'
+        constraints = [
+            UniqueConstraint(
+                fields=('recipe', 'author'), name='unique_cart')
+        ]
 
     def __str__(self):
         return f'Корзина пользователя: {self.author.username}'
