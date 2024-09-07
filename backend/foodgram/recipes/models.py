@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import UniqueConstraint
+from django.db.models import Q
 
 from foodgram.settings import MAX_LEN_NAME
 
@@ -19,7 +21,7 @@ class Recipe(models.Model):
         'Tag',
         verbose_name='Тег',
     )
-    cooking_time = cooking_time = models.IntegerField(
+    cooking_time = models.IntegerField(
         verbose_name='Время приготовления (минуты)'
     )
     ingredient = models.ManyToManyField(
@@ -34,16 +36,6 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-    # is_favorited = models.BooleanField(
-    #     default=False,
-    #     verbose_name='В избранном',
-    #     help_text='Снимите галочку, чтобы убрать из избранного.'
-    # )
-    # is_in_shopping_cart = models.BooleanField(
-    #     default=False,
-    #     verbose_name='В корзине',
-    #     help_text='Снимите галочку, чтобы убрать из корзины.'
-    # )
 
 
 class Tag(models.Model):
@@ -91,8 +83,9 @@ class Ingredient(models.Model):
 
 
 class Cart(models.Model):
-    recipe = models.ManyToManyField(
+    recipe = models.ForeignKey(
         Recipe,
+        on_delete=models.CASCADE,
         verbose_name='Рецепт',
         blank=True,
     )
@@ -110,21 +103,27 @@ class Cart(models.Model):
         return f'Корзина пользователя: {self.author.username}'
 
 
-class Favourites(models.Model):
-    recipe = models.ManyToManyField(
+class Favourite(models.Model):
+    recipe = models.ForeignKey(
         Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorites',
         verbose_name='Рецепт',
-        blank=True,
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name='favorites',
         verbose_name='Автор избранного'
     )
 
     class Meta:
         verbose_name = 'избранное'
         verbose_name_plural = 'Список избранных рецептов'
+        constraints = [
+            UniqueConstraint(
+                fields=('recipe', 'author'), name='unique_favorites')
+        ]
 
     def __str__(self):
-        return f'Список подписок пользователя: {self.author.username}'
+        return f'Список избранного пользователя: {self.author.username}'

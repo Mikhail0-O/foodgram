@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Recipe, Tag, Ingredient, Cart, Favourites
+from .models import Recipe, Tag, Ingredient, Cart, Favourite
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -36,25 +36,25 @@ class IngredientAdmin(admin.ModelAdmin):
 
 
 class CartAdmin(admin.ModelAdmin):
-    list_display = ('author', 'recipe_list')
+    list_display = ('author', 'recipe')
 
-    def recipe_list(self, obj):
-        return ", ".join(obj.recipe.values_list('name', flat=True))
+    # def recipe_list(self, obj):
+    #     return ", ".join(obj.recipe.values_list('name', flat=True))
 
-    recipe_list.short_description = 'Список рецептов'
+    # recipe_list.short_description = 'Список рецептов'
 
 
 class FavouritesAdmin(admin.ModelAdmin):
-    list_display = ('author', 'recipe_list')
+    list_display = ('author', 'recipe')
 
-    def recipe_list(self, obj):
-        return ", ".join(obj.recipe.values_list('name', flat=True))
+    # def recipe_list(self, obj):
+    #     return ", ".join(obj.recipe.values_list('name', flat=True))
 
-    recipe_list.short_description = 'Список рецептов в избранном'
+    # recipe_list.short_description = 'Список рецептов в избранном'
 
 
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Cart, CartAdmin)
-admin.site.register(Favourites, FavouritesAdmin)
+admin.site.register(Favourite, FavouritesAdmin)

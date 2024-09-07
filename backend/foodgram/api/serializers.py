@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 import re
 
-from recipes.models import Recipe, Tag, Ingredient, Cart, Favourites
+from recipes.models import Recipe, Tag, Ingredient, Cart, Favourite
 from .exceptions import CustomValidation
 
 
@@ -44,9 +44,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        # fields = '__all__'
-        fields = ('id', 'name', 'is_in_shopping_cart', 'author',
-                  'tag', 'ingredient', 'is_favorited')
+        fields = ('id', 'name', 'is_in_shopping_cart', 'author', 'description',
+                  'tag', 'ingredient', 'is_favorited', 'cooking_time')
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
@@ -59,7 +58,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         user = self.context['request'].user
         if user.is_authenticated:
-            cart = Favourites.objects.filter(recipe=obj, author=user).first()
+            cart = Favourite.objects.filter(recipe=obj, author=user).first()
             if cart:
                 return True
         return False
@@ -93,4 +92,51 @@ class TokenSerializer(serializers.Serializer):
             )
 
         data['user'] = user
+        return data
+
+
+class RecipeShortSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            # 'image',
+            'cooking_time'
+        )
+
+
+class FavouriteSerializer(serializers.ModelSerializer):
+    recipe = RecipeShortSerializer(read_only=True)
+
+    class Meta:
+        model = Favourite
+        fields = ('recipe',)
+        read_only_fields = ('recipe',)
+
+    def to_representation(self, instance):
+        recipe_data = RecipeShortSerializer(instance.recipe).data
+        return recipe_data
+
+    def create(self, validated_data):
+        recipe_id = (
+            self.context['request'].parser_context['kwargs']['recipe_id']
+        )
+        request = self.context.get('request')
+        recipe = Recipe.objects.get(id=recipe_id)
+        if request and hasattr(request, 'user'):
+            validated_data['author'] = request.user
+            validated_data['recipe'] = recipe
+        return super().create(validated_data)
+
+    def validate(self, data):
+        # Проверяем, чтобы рецепт не был уже добавлен в избранное
+        recipe_id = (
+            self.context['request'].parser_context['kwargs']['recipe_id']
+        )
+        recipe = Recipe.objects.get(id=recipe_id)
+        user = self.context['request'].user
+        if Favourite.objects.filter(author=user, recipe=recipe).exists():
+            raise serializers.ValidationError("Этот рецепт уже в избранном.")
         return data
