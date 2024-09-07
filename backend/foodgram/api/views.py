@@ -111,16 +111,16 @@ def download_shopping_cart(request):
     ).annotate(
         amount=Sum('recipe__ingredient__amount')
     ).order_by('recipe__ingredient__measurement_unit')
-    shopping_list = []
-    shopping_list += '\n'.join([
+    shopping_cart_list = []
+    shopping_cart_list += '\n'.join([
         f'- {ingredient["recipe__ingredient__name"]} '
-        f'({ingredient["recipe__ingredient__measurement_unit"]}) '
-        f'— ({ingredient["amount"]})'
+        f'— {ingredient["amount"]} '
+        f'{ingredient["recipe__ingredient__measurement_unit"]}'
         for ingredient in ingredients
     ])
     response = HttpResponse(
-        shopping_list, content_type='text.txt; charset=utf-8'
+        shopping_cart_list, content_type='text.txt; charset=utf-8'
     )
-    filename = 'shopping_list.txt'
+    filename = 'shopping_cart_list.txt'
     response['Content-Disposition'] = f'attachment; filename={filename}'
     return response
