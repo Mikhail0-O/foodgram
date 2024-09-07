@@ -17,7 +17,6 @@ class UserSerializer(BaseUserSerializer):
     avatar = serializers.ImageField(required=False)
 
     class Meta(BaseUserSerializer.Meta):
-        # fields = BaseUserSerializer.Meta.fields + ('first_name', 'avatar',)
         fields = (
             'id', 'username', 'email', 'first_name', 'last_name', 'avatar'
         )
