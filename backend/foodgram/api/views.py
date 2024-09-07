@@ -10,16 +10,22 @@ from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
+from djoser.views import UserViewSet as BaseUserViewSet
 
 from recipes.models import Recipe, Tag, Ingredient, Favourite, Cart
 from .serializers import (RecipeSerializer, TokenSerializer,
                           TagSerializer, IngredientSerializer,
-                          FavouriteSerializer, CartSerializer)
+                          FavouriteSerializer, CartSerializer,
+                          UserSerializer)
 from users.get_tokens_for_user import get_tokens_for_user
 from .permissions import IsAuthorOrReadOnly
 
 
 User = get_user_model()
+
+
+class UserViewSet(BaseUserViewSet):
+    serializer_class = UserSerializer
 
 
 class RecipeViewSet(viewsets.ModelViewSet):

@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
+    'users.apps.UsersConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -159,3 +161,8 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MAX_LEN_NAME = 256
+
+# Кастомная модель пользователя
+AUTH_USER_MODEL = 'users.CustomUser'
+
+VALID_USERNAME_CHARACTERS = r'^[\w.@+-]+\Z'

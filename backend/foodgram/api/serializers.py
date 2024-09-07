@@ -3,13 +3,24 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 import re
 from djoser.serializers import TokenCreateSerializer
+from djoser.serializers import UserSerializer as BaseUserSerializer
+from rest_framework import serializers
 
 from recipes.models import Recipe, Tag, Ingredient, Cart, Favourite
 from .exceptions import CustomValidation
-# from .mixins import CreateRepresentationMixin
 
 
 User = get_user_model()
+
+
+class UserSerializer(BaseUserSerializer):
+    avatar = serializers.ImageField(required=False)
+
+    class Meta(BaseUserSerializer.Meta):
+        # fields = BaseUserSerializer.Meta.fields + ('first_name', 'avatar',)
+        fields = (
+            'id', 'username', 'email', 'first_name', 'last_name', 'avatar'
+        )
 
 
 class TagSerializer(serializers.ModelSerializer):
