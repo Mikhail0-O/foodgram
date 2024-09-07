@@ -19,7 +19,8 @@ v1_router.register('ingredients', IngredientViewSet, basename='ingredients')
 app_name = 'api'
 
 urlpatterns = [
-    path('v1/auth/token/', get_token, name='token'),
+    path('v1/auth/token/login/', get_token, name='token'),
+#     path('v1/auth/', include('djoser.urls.authtoken')),
     path('v1/recipes/download_shopping_cart/',
          download_shopping_cart,
          name='download_shopping_cart'),

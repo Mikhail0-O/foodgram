@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'djoser',
     'rest_framework',
+    'rest_framework.authtoken',
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
 ]
@@ -108,9 +110,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
 
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.'
                                 'pagination.PageNumberPagination',
@@ -121,10 +123,16 @@ REST_FRAMEWORK = {
     ],
 }
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
-    'AUTH_HEADER_TYPES': ('Bearer',),
-}
+# DJOSER = {
+#     'SERIALIZERS': {
+#         'token_create': 'api.serializers.TokenSerializer',
+#     },
+# }
+
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
+#     'AUTH_HEADER_TYPES': ('Bearer',),
+# }
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

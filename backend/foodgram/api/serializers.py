@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework import status
 import re
+from djoser.serializers import TokenCreateSerializer
 
 from recipes.models import Recipe, Tag, Ingredient, Cart, Favourite
 from .exceptions import CustomValidation
@@ -77,7 +78,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     # )
 
 
-class TokenSerializer(serializers.Serializer):
+class TokenSerializer(TokenCreateSerializer):
     username = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
 
@@ -106,6 +107,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
             # 'image',
             'cooking_time'
         )
+
 
 class CreateRepresentationMixin:
     def to_representation(self, instance):

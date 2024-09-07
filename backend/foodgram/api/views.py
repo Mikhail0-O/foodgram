@@ -8,6 +8,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 from django.db.models import Sum
+from rest_framework.authtoken.models import Token
+from django.db import IntegrityError
 
 from recipes.models import Recipe, Tag, Ingredient, Favourite, Cart
 from .serializers import (RecipeSerializer, TokenSerializer,
@@ -78,26 +80,18 @@ class CartViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     # instance = self.get_object()
-    #     # serializer = self.get_serializer(instance)
-    #     response = HttpResponse(
-    #         ['shopping_list'], content_type='text.txt; charset=utf-8'
-    #     )
-    #     filename = '_shopping_list.txt'
-    #     response['Content-Disposition'] = f'attachment; filename={filename}'
-    #     return response
-
 
 @api_view(['POST'])
 def get_token(request):
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = User.objects.filter(
-        username=serializer.validated_data.get('username')
-    ).first()
-    tokens = get_tokens_for_user(user)
-    return Response(tokens, status=status.HTTP_200_OK)
+    username = serializer.validated_data.get('username')
+    user = User.objects.filter(username=username).first()
+    if not user:
+        return Response({'detail': f'Пользователь {username} не существует.'},
+                        status=status.HTTP_404_NOT_FOUND)
+    token, created = Token.objects.get_or_create(user=user)
+    return Response({'token': token.key}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
