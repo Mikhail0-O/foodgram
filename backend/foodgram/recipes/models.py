@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import UniqueConstraint
-from django.db.models import Q
 
 from foodgram.settings import MAX_LEN_NAME
 
