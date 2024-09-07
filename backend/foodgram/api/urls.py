@@ -1,16 +1,18 @@
 from rest_framework import routers
 from django.urls import include, path
+from djoser.views import UserViewSet
 
 from .views import (RecipeViewSet, get_token,
                     TagViewSet, IngredientViewSet,
                     FavouriteViewSet, CartViewSet,
-                    download_shopping_cart)
+                    download_shopping_cart, delete_token)
 
 
 v1_router = routers.DefaultRouter()
 v1_router.register('recipes', RecipeViewSet, basename='recipes')
 v1_router.register('tags', TagViewSet, basename='tags')
 v1_router.register('ingredients', IngredientViewSet, basename='ingredients')
+v1_router.register('users', UserViewSet)
 # v1_router.register(
 #     r'recipes/(?P<recipe_id>\d+)/favorite',
 #     FavouriteViewSet, basename='favorite'
@@ -19,8 +21,8 @@ v1_router.register('ingredients', IngredientViewSet, basename='ingredients')
 app_name = 'api'
 
 urlpatterns = [
-    path('v1/auth/token/login/', get_token, name='token'),
-#     path('v1/auth/', include('djoser.urls.authtoken')),
+    path('v1/auth/token/login/', get_token, name='get_token'),
+    path('v1/auth/token/logout/', delete_token, name='delete_token'),
     path('v1/recipes/download_shopping_cart/',
          download_shopping_cart,
          name='download_shopping_cart'),

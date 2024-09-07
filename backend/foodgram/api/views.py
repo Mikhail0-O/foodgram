@@ -94,6 +94,14 @@ def get_token(request):
     return Response({'token': token.key}, status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+def delete_token(request):
+    user = User.objects.filter(username=request.user).first()
+    token = Token.objects.get(user=user)
+    token.delete()
+    return Response({'detail': token.key}, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 def download_shopping_cart(request):
     user = request.user
