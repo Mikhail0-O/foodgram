@@ -24,6 +24,21 @@ from .permissions import IsAuthorOrReadOnly
 User = get_user_model()
 
 
+class AvatarUserViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = User.objects.all().order_by('id')
+
+    def get_object(self):
+        return self.request.user
+
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user.avatar:
+            user.avatar.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class UserViewSet(BaseUserViewSet):
     serializer_class = UserSerializer
 

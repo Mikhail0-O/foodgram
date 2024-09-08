@@ -6,7 +6,7 @@ from .views import (RecipeViewSet, get_token,
                     TagViewSet, IngredientViewSet,
                     FavouriteViewSet, CartViewSet,
                     download_shopping_cart, delete_token,
-                    UserViewSet)
+                    UserViewSet, AvatarUserViewSet)
 
 
 v1_router = routers.DefaultRouter()
@@ -35,5 +35,9 @@ urlpatterns = [
          CartViewSet.as_view({'delete': 'destroy',
                               'post': 'create'}),
          name='recipe-shopping_cart'),
+    path('v1/users/me/avatar/',
+         AvatarUserViewSet.as_view({'delete': 'destroy',
+                                    'put': 'update'}),
+         name='users-avatar'),
     path('v1/', include(v1_router.urls)),
 ]
