@@ -1,14 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator, MinLengthValidator
-from django.contrib.auth import get_user_model
 from django.db.models import UniqueConstraint
 
 from foodgram.settings import VALID_USERNAME_CHARACTERS
 from .validators import validate_username
-
-
-User = get_user_model()
 
 
 class CustomUser(AbstractUser):
@@ -30,14 +26,14 @@ class CustomUser(AbstractUser):
 
 class Follow(models.Model):
     author = models.ForeignKey(
-        User,
+        CustomUser,
         related_name='respondents',
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта'
     )
 
     user = models.ForeignKey(
-        User,
+        CustomUser,
         related_name='followers',
         on_delete=models.CASCADE,
         verbose_name='Фоловер'
