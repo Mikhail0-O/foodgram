@@ -11,6 +11,7 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 
 from recipes.models import Recipe, Tag, Ingredient, Cart, Favourite
+from users.models import Follow
 from .exceptions import CustomValidation
 
 
@@ -28,14 +29,43 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
+
+
+
 class UserSerializer(BaseUserSerializer):
     avatar = Base64ImageField(max_length=None, use_url=True)
     email = serializers.EmailField(required=False)
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta(BaseUserSerializer.Meta):
         fields = (
-            'id', 'username', 'email', 'first_name', 'last_name', 'avatar'
+            'id', 'username', 'email',
+            'first_name', 'last_name', 'avatar',
+            'is_subscribed'
         )
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            return Follow.objects.filter(user=user, author=obj).exists()
+        return False
+
+
+class FollowSerializer(UserSerializer):
+    author = UserSerializer(read_only=True)
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Follow
+        fields = ('author', 'recipes', 'recipes_count',)
+
+    def get_recipes(self, obj):
+        recipes = Recipe.objects.filter(author=obj.author)
+        return RecipeShortSerializer(recipes, many=True).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj.author).count()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -67,13 +97,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         slug_field='name',
         queryset=Ingredient.objects.all()
     )
+    image = Base64ImageField(max_length=None, use_url=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'is_in_shopping_cart', 'author', 'description',
-                  'tag', 'ingredient', 'is_favorited', 'cooking_time')
+        fields = (
+            'id', 'name', 'is_in_shopping_cart', 'author', 'description',
+            'tag', 'ingredient', 'is_favorited', 'cooking_time', 'image'
+        )
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
@@ -130,7 +163,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
-            # 'image',
+            'image',
             'cooking_time'
         )
 

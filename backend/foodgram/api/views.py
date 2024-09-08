@@ -16,12 +16,20 @@ from recipes.models import Recipe, Tag, Ingredient, Favourite, Cart
 from .serializers import (RecipeSerializer, TokenSerializer,
                           TagSerializer, IngredientSerializer,
                           FavouriteSerializer, CartSerializer,
-                          UserSerializer)
+                          UserSerializer, FollowSerializer)
 from users.get_tokens_for_user import get_tokens_for_user
+from users.models import Follow
 from .permissions import IsAuthorOrReadOnly
 
 
 User = get_user_model()
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+    serializer_class = FollowSerializer
+
+    def get_queryset(self):
+        return Follow.objects.filter(user=self.request.user)
 
 
 class AvatarUserViewSet(viewsets.ModelViewSet):
@@ -100,6 +108,42 @@ class CartViewSet(viewsets.ModelViewSet):
                 {'detail': 'Корзина не найдена.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
+    queryset = Follow.objects.all().order_by('id')
+    serializer_class = FollowSerializer
+    permission_classes = [IsAuthorOrReadOnly]
+
+    def destroy(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('user_id')
+        author = User.objects.filter(id=user_id).first()
+        try:
+            follow = Follow.objects.get(
+                author=author, user=request.user
+            )
+            follow.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Follow.DoesNotExist:
+            return Response(
+                {'detail': 'Подписка не найдена.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    # def create(self, request, *args, **kwargs):
+    #     user_id = self.kwargs.get('user_id')
+    #     author = User.objects.filter(id=user_id).first()
+    #     print('_____')
+    #     data = request.data.copy()
+    #     data['author'] = request.user.id
+    #     serializer = self.get_serializer(data=data)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+    #     headers = self.get_success_headers(serializer.data)
+    #     print('_____')
+    #     return Response(
+    #         serializer.data, status=status.HTTP_201_CREATED, headers=headers
+    #     )
 
 
 @api_view(['POST'])

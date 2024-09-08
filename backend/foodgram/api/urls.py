@@ -6,7 +6,8 @@ from .views import (RecipeViewSet, get_token,
                     TagViewSet, IngredientViewSet,
                     FavouriteViewSet, CartViewSet,
                     download_shopping_cart, delete_token,
-                    UserViewSet, AvatarUserViewSet)
+                    UserViewSet, AvatarUserViewSet, FollowViewSet,
+                    FollowDestroyUpdateViewSet)
 
 
 v1_router = routers.DefaultRouter()
@@ -39,5 +40,12 @@ urlpatterns = [
          AvatarUserViewSet.as_view({'delete': 'destroy',
                                     'put': 'update'}),
          name='users-avatar'),
+    path('v1/users/subscriptions/',
+         FollowViewSet.as_view({'get': 'list'}),
+         name='user-follow-get'),
+    path('v1/users/<int:user_id>/subscribe/',
+         FollowDestroyUpdateViewSet.as_view({'delete': 'destroy',
+                                             'post': 'create'}),
+         name='user-follow-delete-post'),
     path('v1/', include(v1_router.urls)),
 ]
