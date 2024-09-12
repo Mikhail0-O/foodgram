@@ -29,7 +29,23 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
+class UserFollowSerializer(BaseUserSerializer):
+    # avatar = Base64ImageField(max_length=None, use_url=True)
+    email = serializers.EmailField(required=False)
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
+    class Meta(BaseUserSerializer.Meta):
+        fields = (
+            'id', 'username', 'email',
+            'first_name', 'last_name', 'is_subscribed'
+        )
+
+    def get_is_subscribed(self, obj):
+        user = obj.user
+        author = obj.author
+        if user.is_authenticated:
+            return Follow.objects.filter(user=user, author=author).exists()
+        return False
 
 
 class UserSerializer(BaseUserSerializer):
@@ -52,13 +68,29 @@ class UserSerializer(BaseUserSerializer):
 
 
 class FollowSerializer(UserSerializer):
-    author = UserSerializer(read_only=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    # author = serializers.SlugRelatedField(
+    #     queryset=User.objects.all(), slug_field='id'
+    # )
+    # author = serializers.SerializerMethodField(required=False)
+    # author = UserSerializer(required=False)
+    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Follow
-        fields = ('author', 'recipes', 'recipes_count',)
+        # fields = ('author', 'recipes', 'recipes_count', 'user')
+        fields = ('recipes', 'recipes_count',)
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=['user', 'author'],
+                message='Вы уже подписаны на этого пользователя.'
+            )
+        ]
+
+    # def get_author(self, obj):
+    #     return UserSerializer(obj.author).data
 
     def get_recipes(self, obj):
         recipes = Recipe.objects.filter(author=obj.author)
@@ -66,6 +98,23 @@ class FollowSerializer(UserSerializer):
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
+
+    def validate(self, data):
+        author_id = self.context['request'].parser_context['kwargs']['user_id']
+        if self.context.get('request').user.id == author_id:
+            raise serializers.ValidationError(
+                'Вы не можете подписаться на себя.'
+            )
+        return data
+
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     print(representation)
+    #     representation['author'] = UserFollowSerializer(instance).data
+
+    #     # # representation['ingredient'] = IngredientSerializer(
+    #     # #     instance.ingredient, many=True).data
+    #     return representation
 
 
 class TagSerializer(serializers.ModelSerializer):

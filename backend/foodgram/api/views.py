@@ -130,20 +130,27 @@ class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    # def create(self, request, *args, **kwargs):
-    #     user_id = self.kwargs.get('user_id')
-    #     author = User.objects.filter(id=user_id).first()
-    #     print('_____')
-    #     data = request.data.copy()
-    #     data['author'] = request.user.id
-    #     serializer = self.get_serializer(data=data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     print('_____')
-    #     return Response(
-    #         serializer.data, status=status.HTTP_201_CREATED, headers=headers
-    #     )
+    def create(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('user_id')
+        author = get_object_or_404(User, id=user_id)
+        # data = {
+        #     'author': author.id,
+        #     'user': request.user.id
+        # }
+        data = {}
+        user_data = UserSerializer(author, context={'request': request}).data
+        # data.update(user_data)
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        # print(serializer.data)
+        user_data.update(serializer.data)
+        user_data.popitem('author')
+        # user_data.popitem('user')
+        return Response(
+            user_data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
 @api_view(['POST'])
