@@ -5,7 +5,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework.authtoken.models import Token
@@ -49,6 +49,17 @@ class AvatarUserViewSet(viewsets.ModelViewSet):
 
 class UserViewSet(BaseUserViewSet):
     serializer_class = UserSerializer
+
+    # def create(self, request, *args, **kwargs):
+    #     user_id = self.kwargs.get('user_id')
+    #     author = get_object_or_404(User, id=user_id)
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     user_data = UserSerializer(author, context={'request': request}).data
+    #     print(user_data)
+    #     self.perform_create(serializer)
+    #     headers = self.get_success_headers(serializer.data)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -181,10 +192,11 @@ def get_token(request):
 
 @api_view(['POST'])
 def delete_token(request):
+    print(request.user)
     user = User.objects.filter(username=request.user).first()
     token = Token.objects.get(user=user)
     token.delete()
-    return Response({'detail': token.key}, status=status.HTTP_200_OK)
+    return Response(token.key, status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])

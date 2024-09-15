@@ -14,6 +14,16 @@ class CustomUser(AbstractUser):
                     MinLengthValidator(limit_value=5),
                     RegexValidator(regex=VALID_USERNAME_CHARACTERS)]
     )
+    first_name = models.CharField(
+        'first_name',
+        max_length=150,
+        blank=True
+    )
+    last_name = models.CharField(
+        'last_name',
+        max_length=150,
+        blank=True
+    )
     email = models.EmailField(
         'email',
         unique=True, max_length=254)

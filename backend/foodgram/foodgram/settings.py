@@ -125,11 +125,15 @@ REST_FRAMEWORK = {
     ],
 }
 
-# DJOSER = {
-#     'SERIALIZERS': {
-#         'token_create': 'api.serializers.TokenSerializer',
-#     },
-# }
+DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'api.serializers.CustomUserCreateSerializer',
+    },
+
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    },
+}
 
 # SIMPLE_JWT = {
 #     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),

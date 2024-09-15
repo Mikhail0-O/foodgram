@@ -4,6 +4,7 @@ from rest_framework import status
 import re
 from djoser.serializers import TokenCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
+from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from rest_framework import serializers
 import base64
 import uuid
@@ -46,6 +47,17 @@ class UserFollowSerializer(BaseUserSerializer):
         if user.is_authenticated:
             return Follow.objects.filter(user=user, author=author).exists()
         return False
+
+
+class CustomUserCreateSerializer(BaseUserCreateSerializer):
+    first_name = serializers.CharField(required=True, max_length=150)
+    last_name = serializers.CharField(required=True, max_length=150)
+
+    class Meta(BaseUserCreateSerializer.Meta):
+        model = User
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'password')
 
 
 class UserSerializer(BaseUserSerializer):
