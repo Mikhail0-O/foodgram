@@ -55,9 +55,9 @@ class UserSerializer(BaseUserSerializer):
 
     class Meta(BaseUserSerializer.Meta):
         fields = (
-            'id', 'username', 'email',
-            'first_name', 'last_name', 'avatar',
-            'is_subscribed'
+            'email', 'id', 'username',
+            'first_name', 'last_name', 'is_subscribed',
+            'avatar',
         )
 
     def get_is_subscribed(self, obj):
@@ -187,18 +187,18 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(TokenCreateSerializer):
-    username = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
 
     def validate(self, data):
-        username = data.get('username')
-
+        email = data.get('email')
+        print(email)
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise CustomValidation(
                 'Не существует',
-                username, status_code=status.HTTP_404_NOT_FOUND
+                email, status_code=status.HTTP_404_NOT_FOUND
             )
 
         data['user'] = user

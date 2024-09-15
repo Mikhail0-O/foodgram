@@ -153,17 +153,30 @@ class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
         )
 
 
+# @api_view(['POST'])
+# def get_token(request):
+#     serializer = TokenSerializer(data=request.data)
+#     serializer.is_valid(raise_exception=True)
+#     username = serializer.validated_data.get('username')
+#     user = User.objects.filter(username=username).first()
+#     if not user:
+#         return Response({'detail': f'Пользователь {username} не существует.'},
+#                         status=status.HTTP_404_NOT_FOUND)
+#     token, created = Token.objects.get_or_create(user=user)
+#     return Response({'auth_token': token.key}, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 def get_token(request):
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    username = serializer.validated_data.get('username')
-    user = User.objects.filter(username=username).first()
+    email = serializer.validated_data.get('email')
+    user = User.objects.filter(email=email).first()
     if not user:
-        return Response({'detail': f'Пользователь {username} не существует.'},
+        return Response({'detail': f'Пользователь {email} не существует.'},
                         status=status.HTTP_404_NOT_FOUND)
     token, created = Token.objects.get_or_create(user=user)
-    return Response({'token': token.key}, status=status.HTTP_200_OK)
+    return Response({'auth_token': token.key}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
