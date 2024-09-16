@@ -60,6 +60,14 @@ class CustomUserCreateSerializer(BaseUserCreateSerializer):
             'password')
 
 
+class AvatarUserSerializer(serializers.ModelSerializer):
+    avatar = Base64ImageField(max_length=None, use_url=True)
+
+    class Meta:
+        model = User
+        fields = ('avatar',)
+
+
 class UserSerializer(BaseUserSerializer):
     avatar = Base64ImageField(max_length=None, use_url=True)
     email = serializers.EmailField(required=False)

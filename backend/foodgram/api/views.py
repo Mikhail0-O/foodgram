@@ -16,7 +16,8 @@ from recipes.models import Recipe, Tag, Ingredient, Favourite, Cart
 from .serializers import (RecipeSerializer, TokenSerializer,
                           TagSerializer, IngredientSerializer,
                           FavouriteSerializer, CartSerializer,
-                          UserSerializer, FollowSerializer)
+                          UserSerializer, FollowSerializer,
+                          AvatarUserSerializer)
 from users.get_tokens_for_user import get_tokens_for_user
 from users.models import Follow
 from .permissions import IsAuthorOrReadOnly
@@ -33,7 +34,7 @@ class FollowViewSet(viewsets.ModelViewSet):
 
 
 class AvatarUserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
+    serializer_class = AvatarUserSerializer
     permission_classes = [IsAuthenticated]
     queryset = User.objects.all().order_by('id')
 
