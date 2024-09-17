@@ -17,14 +17,14 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта'
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         'Tag',
         verbose_name='Тег',
     )
     cooking_time = models.IntegerField(
         verbose_name='Время приготовления (минуты)'
     )
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         'Ingredient',
         related_name='recipes',
         verbose_name='Ингредиент'

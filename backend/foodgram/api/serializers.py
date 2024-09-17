@@ -151,17 +151,24 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
+class IngredientNotAmountSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True
     )
-    tag = serializers.SlugRelatedField(
+    tags = serializers.SlugRelatedField(
         many=True,
         slug_field='slug',
         queryset=Tag.objects.all()
     )
-    ingredient = serializers.SlugRelatedField(
+    ingredients = serializers.SlugRelatedField(
         many=True,
         slug_field='name',
         queryset=Ingredient.objects.all()
@@ -169,12 +176,13 @@ class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField(max_length=None, use_url=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
+    description = serializers.CharField(required=False)
 
     class Meta:
         model = Recipe
         fields = (
             'id', 'name', 'is_in_shopping_cart', 'author', 'description',
-            'tag', 'ingredient', 'is_favorited', 'cooking_time', 'image'
+            'tags', 'ingredients', 'is_favorited', 'cooking_time', 'image'
         )
 
     def get_is_in_shopping_cart(self, obj):

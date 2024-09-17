@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework import permissions
+from rest_framework.permissions import BasePermission
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
@@ -15,3 +16,10 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
         if request.method in ('PATCH', 'DELETE', 'POST'):
             return obj.author == request.user
         return False
+
+
+class IsCurrentUserOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if view.action == 'me':
+            return obj == request.user
+        return request.method in ('GET', 'HEAD', 'OPTIONS')

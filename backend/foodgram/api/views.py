@@ -17,10 +17,10 @@ from .serializers import (RecipeSerializer, TokenSerializer,
                           TagSerializer, IngredientSerializer,
                           FavouriteSerializer, CartSerializer,
                           UserSerializer, FollowSerializer,
-                          AvatarUserSerializer)
+                          AvatarUserSerializer, IngredientNotAmountSerializer)
 from users.get_tokens_for_user import get_tokens_for_user
 from users.models import Follow
-from .permissions import IsAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
 
 
 User = get_user_model()
@@ -51,6 +51,15 @@ class AvatarUserViewSet(viewsets.ModelViewSet):
 class UserViewSet(BaseUserViewSet):
     serializer_class = UserSerializer
 
+    def get_permissions(self):
+        if self.action == 'me':
+            self.permission_classes = [IsAuthenticated, IsCurrentUserOrReadOnly]
+        elif self.action == 'retrieve':
+            self.permission_classes = [AllowAny]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
+
     # def create(self, request, *args, **kwargs):
     #     user_id = self.kwargs.get('user_id')
     #     author = get_object_or_404(User, id=user_id)
@@ -75,11 +84,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all().order_by('id')
     serializer_class = TagSerializer
+    pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all().order_by('id')
-    serializer_class = IngredientSerializer
+    serializer_class = IngredientNotAmountSerializer
+    pagination_class = None
 
 
 class FavouriteViewSet(viewsets.ModelViewSet):
