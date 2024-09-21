@@ -1,27 +1,27 @@
 from django.contrib.auth import get_user_model
-from rest_framework import status, viewsets, views
-from rest_framework.decorators import action, api_view
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.http import HttpResponse
 from django.db.models import Sum
-from rest_framework.authtoken.models import Token
-from djoser.views import UserViewSet as BaseUserViewSet
-from rest_framework.pagination import LimitOffsetPagination
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet as BaseUserViewSet
+from rest_framework import status, views, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
-from recipes.models import Recipe, Tag, Ingredient, Favourite, Cart
-from .serializers import (RecipeSerializer, TokenSerializer,
-                          TagSerializer, IngredientSerializer,
-                          FavouriteSerializer, CartSerializer,
-                          UserSerializer, FollowSerializer,
-                          AvatarUserSerializer, IngredientNotAmountSerializer,
-                          FollowUserSerializer,
-                          UserReadFollowSerializer, RecipeLinkSerializer)
+from recipes.models import Cart, Favourite, Ingredient, Recipe, Tag
 from users.models import Follow
-from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
+
 from .filters import RecipeFilter
+from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
+from .serializers import (AvatarUserSerializer, CartSerializer,
+                          FavouriteSerializer, FollowSerializer,
+                          FollowUserSerializer, IngredientNotAmountSerializer,
+                          RecipeLinkSerializer, RecipeSerializer,
+                          TagSerializer, TokenSerializer,
+                          UserReadFollowSerializer, UserSerializer)
 
 
 User = get_user_model()

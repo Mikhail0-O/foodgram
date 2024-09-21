@@ -1,19 +1,18 @@
-from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from rest_framework import status
-from djoser.serializers import TokenCreateSerializer
-from djoser.serializers import UserSerializer as BaseUserSerializer
-from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
-from rest_framework import serializers
 import base64
 import uuid
-from django.core.files.base import ContentFile
-from rest_framework import serializers
-from django.shortcuts import get_object_or_404
 
-from recipes.models import (Recipe, Tag, Ingredient, Cart, Favourite,
-                            IngredientForRecipe)
+from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
+from djoser.serializers import TokenCreateSerializer
+from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
+from djoser.serializers import UserSerializer as BaseUserSerializer
+from rest_framework import serializers, status
+
+from recipes.models import (Cart, Favourite, Ingredient, IngredientForRecipe,
+                            Recipe, Tag)
 from users.models import Follow
+
 from .exceptions import CustomValidation
 
 
