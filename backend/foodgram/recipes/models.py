@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import UniqueConstraint
+import shortuuid
 
 from foodgram.settings import MAX_LEN_NAME
 
@@ -30,6 +31,12 @@ class Recipe(models.Model):
         verbose_name='Ингредиент'
     )
     image = models.ImageField('Фото', blank=True)
+    short_link = models.CharField(max_length=10, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.short_link:
+            self.short_link = shortuuid.ShortUUID().random(length=3)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'рецепт'

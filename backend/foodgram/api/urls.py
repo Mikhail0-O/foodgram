@@ -7,7 +7,7 @@ from .views import (RecipeViewSet, get_token,
                     FavouriteViewSet, CartViewSet,
                     download_shopping_cart, delete_token,
                     UserViewSet, AvatarUserViewSet, FollowViewSet,
-                    FollowDestroyUpdateViewSet)
+                    FollowDestroyUpdateViewSet, RecipeLinkView)
 
 
 v1_router = routers.DefaultRouter()
@@ -47,5 +47,7 @@ urlpatterns = [
          FollowDestroyUpdateViewSet.as_view({'delete': 'destroy',
                                              'post': 'create'}),
          name='user-follow-delete-post'),
+    path('recipes/<int:id>/get-link/',
+         RecipeLinkView.as_view(), name='recipe-get-link'),
     path('', include(v1_router.urls)),
 ]

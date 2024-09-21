@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, status, viewsets, views
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -20,7 +20,8 @@ from .serializers import (RecipeSerializer, TokenSerializer,
                           FavouriteSerializer, CartSerializer,
                           UserSerializer, FollowSerializer,
                           AvatarUserSerializer, IngredientNotAmountSerializer,
-                          FollowUserSerializer, UserFollowSerializer, UserReadFollowSerializer)
+                          FollowUserSerializer, UserFollowSerializer,
+                          UserReadFollowSerializer, RecipeLinkSerializer)
 from users.get_tokens_for_user import get_tokens_for_user
 from users.models import Follow
 from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
@@ -219,16 +220,16 @@ def download_shopping_cart(request):
     if not user.carts.exists():
         return Response(status=status.HTTP_400_BAD_REQUEST)
     ingredients = user.carts.all().values(
-        'recipe__ingredient__measurement_unit',
-        'recipe__ingredient__name'
+        'recipe__ingredients__ingredient__measurement_unit',
+        'recipe__ingredients__ingredient__name'
     ).annotate(
-        amount=Sum('recipe__ingredient__amount')
-    ).order_by('recipe__ingredient__measurement_unit')
+        amount=Sum('recipe__ingredients__amount')
+    ).order_by('recipe__ingredients__ingredient__measurement_unit')
     shopping_cart_list = []
     shopping_cart_list += '\n'.join([
-        f'- {ingredient["recipe__ingredient__name"]} '
+        f'- {ingredient["recipe__ingredients__ingredient__name"]} '
         f'— {ingredient["amount"]} '
-        f'{ingredient["recipe__ingredient__measurement_unit"]}'
+        f'{ingredient["recipe__ingredients__ingredient__measurement_unit"]}'
         for ingredient in ingredients
     ])
     response = HttpResponse(
@@ -239,10 +240,10 @@ def download_shopping_cart(request):
     return response
 
 
-class RecipeDetailView(DetailView):
-    model = Recipe
-    template_name = 'recipe_detail.html'
+class RecipeLinkView(views.APIView):
 
-    def get_object(self):
-        short_link = self.kwargs.get('short_link')
-        return get_object_or_404(Recipe, short_link=short_link)
+    def get(self, request, id):
+        recipe = get_object_or_404(Recipe, id=id)
+        print(request)
+        serializer = RecipeLinkSerializer(recipe, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

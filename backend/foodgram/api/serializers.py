@@ -466,7 +466,8 @@ class FavouriteSerializer(CreateRepresentationMixin,
         recipe_id = (
             self.context['request'].parser_context['kwargs']['recipe_id']
         )
-        recipe = Recipe.objects.get(id=recipe_id)
+        # recipe = Recipe.objects.get(id=recipe_id)
+        recipe = get_object_or_404(Recipe.objects.filter(id=recipe_id))
         user = self.context['request'].user
         if Favourite.objects.filter(author=user, recipe=recipe).exists():
             raise serializers.ValidationError("Этот рецепт уже в избранном.")
@@ -486,8 +487,26 @@ class CartSerializer(CreateRepresentationMixin,
         recipe_id = (
             self.context['request'].parser_context['kwargs']['recipe_id']
         )
-        recipe = Recipe.objects.get(id=recipe_id)
+        recipe = get_object_or_404(Recipe.objects.filter(id=recipe_id))
+        # recipe = Recipe.objects.get(id=recipe_id)
         user = self.context['request'].user
         if Cart.objects.filter(author=user, recipe=recipe).exists():
             raise serializers.ValidationError("Этот рецепт уже в избранном.")
         return data
+
+
+class RecipeLinkSerializer(serializers.ModelSerializer):
+    short_link = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Recipe
+        fields = ['short_link']
+
+    def get_short_link(self, obj):
+        request = self.context.get('request')
+        return request.build_absolute_uri(f'/r/{obj.short_link}/')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['short-link'] = representation.pop('short_link')
+        return representation
