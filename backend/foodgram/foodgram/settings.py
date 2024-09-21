@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-&-n3d97)8v(iob+x0g3$&g-@ih@twv0rka-sxr27y!_10r3^6m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['84.252.142.41', '127.0.0.1', 'localhost', 'kittygram.bounceme.net']
 
 
 # Application definition
