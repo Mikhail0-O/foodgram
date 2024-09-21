@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# flake8: noqa
 """
 Django settings for foodgram project.
 
