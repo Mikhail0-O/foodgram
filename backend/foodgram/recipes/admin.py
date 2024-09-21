@@ -1,24 +1,24 @@
 from django.contrib import admin
 
-from .models import Recipe, Tag, Ingredient, Cart, Favourite
+from .models import Recipe, Tag, Ingredient, Cart, Favourite, IngredientForRecipe
 
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'name', 'description', 'tag_list',
+        'id', 'name', 'text', 'tag_list',
         'ingredient_list',
     )
     # search_fields = ('name', 'year', 'category__name')
     # list_filter = ('year', 'category', 'genre')
-    list_editable = ('name', 'description',)
+    list_editable = ('name', 'text',)
 
     def tag_list(self, obj):
-        return ", ".join(obj.tag.values_list('name', flat=True))
+        return ", ".join(obj.tags.values_list('name', flat=True))
 
     tag_list.short_description = 'Теги'
 
     def ingredient_list(self, obj):
-        return ", ".join(obj.ingredient.values_list('name', flat=True))
+        return ", ".join(obj.ingredients.values_list('ingredient__name', flat=True))
 
     ingredient_list.short_description = 'Список ингредиентов'
 
@@ -33,6 +33,13 @@ class TagAdmin(admin.ModelAdmin):
 
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name',)
+
+
+class IngredientForRecipeAdmin(admin.ModelAdmin):
+    list_display = (
+        'ingredient',
+        'amount',
+    )
 
 
 class CartAdmin(admin.ModelAdmin):
@@ -56,5 +63,6 @@ class FavouritesAdmin(admin.ModelAdmin):
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(IngredientForRecipe, IngredientForRecipeAdmin)
 admin.site.register(Cart, CartAdmin)
 admin.site.register(Favourite, FavouritesAdmin)

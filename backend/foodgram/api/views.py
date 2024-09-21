@@ -11,16 +11,21 @@ from django.db.models import Sum
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
 from djoser.views import UserViewSet as BaseUserViewSet
+from rest_framework.pagination import LimitOffsetPagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 from recipes.models import Recipe, Tag, Ingredient, Favourite, Cart
 from .serializers import (RecipeSerializer, TokenSerializer,
                           TagSerializer, IngredientSerializer,
                           FavouriteSerializer, CartSerializer,
                           UserSerializer, FollowSerializer,
-                          AvatarUserSerializer, IngredientNotAmountSerializer)
+                          AvatarUserSerializer, IngredientNotAmountSerializer,
+                          FollowUserSerializer, UserFollowSerializer, UserReadFollowSerializer)
 from users.get_tokens_for_user import get_tokens_for_user
 from users.models import Follow
 from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
+from .filters import RecipeFilter
+from .pagination import FollowPagination
 
 
 User = get_user_model()
@@ -28,9 +33,25 @@ User = get_user_model()
 
 class FollowViewSet(viewsets.ModelViewSet):
     serializer_class = FollowSerializer
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         return Follow.objects.filter(user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        user = request.user
+        recipes_limit = self.request.query_params.get('recipes_limit', None)
+        queryset = User.objects.filter(respondents__user=user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = UserReadFollowSerializer(
+                page,
+                many=True,
+                context={'request': request,
+                         'recipes_limit': recipes_limit})
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class AvatarUserViewSet(viewsets.ModelViewSet):
@@ -50,6 +71,7 @@ class AvatarUserViewSet(viewsets.ModelViewSet):
 
 class UserViewSet(BaseUserViewSet):
     serializer_class = UserSerializer
+    pagination_class = LimitOffsetPagination
 
     def get_permissions(self):
         if self.action == 'me':
@@ -60,22 +82,15 @@ class UserViewSet(BaseUserViewSet):
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
-    # def create(self, request, *args, **kwargs):
-    #     user_id = self.kwargs.get('user_id')
-    #     author = get_object_or_404(User, id=user_id)
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     user_data = UserSerializer(author, context={'request': request}).data
-    #     print(user_data)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all().order_by('id')
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthorOrReadOnly]
+    pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
+    # search_fields = ('author',)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -137,6 +152,7 @@ class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all().order_by('id')
     serializer_class = FollowSerializer
     permission_classes = [IsAuthorOrReadOnly]
+    # pagination_class = FollowPagination
 
     def destroy(self, request, *args, **kwargs):
         user_id = self.kwargs.get('user_id')
@@ -156,37 +172,23 @@ class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         user_id = self.kwargs.get('user_id')
         author = get_object_or_404(User, id=user_id)
-        # data = {
-        #     'author': author.id,
-        #     'user': request.user.id
-        # }
-        data = {}
-        user_data = UserSerializer(author, context={'request': request}).data
-        # data.update(user_data)
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        # print(serializer.data)
-        user_data.update(serializer.data)
-        user_data.popitem('author')
-        # user_data.popitem('user')
+        recipes_limit = self.request.query_params.get('recipes_limit', None)
+        print(type(recipes_limit))
+        user_data = FollowUserSerializer(
+            author, context={'request': request,
+                             'recipes_limit': recipes_limit}
+        ).data
         return Response(
-            user_data, status=status.HTTP_201_CREATED, headers=headers
+            user_data, status=status.HTTP_201_CREATED
         )
 
-
-# @api_view(['POST'])
-# def get_token(request):
-#     serializer = TokenSerializer(data=request.data)
-#     serializer.is_valid(raise_exception=True)
-#     username = serializer.validated_data.get('username')
-#     user = User.objects.filter(username=username).first()
-#     if not user:
-#         return Response({'detail': f'Пользователь {username} не существует.'},
-#                         status=status.HTTP_404_NOT_FOUND)
-#     token, created = Token.objects.get_or_create(user=user)
-#     return Response({'auth_token': token.key}, status=status.HTTP_200_OK)
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        recipes_limit = self.request.query_params.get('recipes_limit', None)
+        print(recipes_limit)
+        if recipes_limit is not None:
+            context['recipes_limit'] = int(recipes_limit)
+        return context
 
 
 @api_view(['POST'])
@@ -235,3 +237,12 @@ def download_shopping_cart(request):
     filename = 'shopping_cart_list.txt'
     response['Content-Disposition'] = f'attachment; filename={filename}'
     return response
+
+
+class RecipeDetailView(DetailView):
+    model = Recipe
+    template_name = 'recipe_detail.html'
+
+    def get_object(self):
+        short_link = self.kwargs.get('short_link')
+        return get_object_or_404(Recipe, short_link=short_link)

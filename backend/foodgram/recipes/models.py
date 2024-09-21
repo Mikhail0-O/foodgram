@@ -10,7 +10,7 @@ User = get_user_model()
 
 class Recipe(models.Model):
     name = models.CharField('Название', max_length=MAX_LEN_NAME)
-    description = models.TextField('Описание рецепта')
+    text = models.TextField('Описание рецепта')
     author = models.ForeignKey(
         User,
         related_name='recipes',
@@ -25,7 +25,7 @@ class Recipe(models.Model):
         verbose_name='Время приготовления (минуты)'
     )
     ingredients = models.ManyToManyField(
-        'Ingredient',
+        'IngredientForRecipe',
         related_name='recipes',
         verbose_name='Ингредиент'
     )
@@ -70,9 +70,9 @@ class Ingredient(models.Model):
         max_length=MAX_LEN_NAME,
         verbose_name='Единицы измерения',
     )
-    amount = models.IntegerField(
-        verbose_name='Количество'
-    )
+    # amount = models.IntegerField(
+    #     verbose_name='Количество'
+    # )
 
     class Meta:
         verbose_name = 'ингредиент'
@@ -80,6 +80,24 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class IngredientForRecipe(models.Model):
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиенты для рецепта',
+    )
+    amount = models.IntegerField(
+        verbose_name='Количество'
+    )
+
+    class Meta:
+        verbose_name = 'ингредиент для рецепта'
+        verbose_name_plural = 'Ингредиенты для рецепта'
+
+    # def __str__(self):
+    #     return f'{self.name}'
 
 
 class Cart(models.Model):
