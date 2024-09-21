@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework import status
-import re
 from djoser.serializers import TokenCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
@@ -12,7 +11,8 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 
-from recipes.models import Recipe, Tag, Ingredient, Cart, Favourite, IngredientForRecipe
+from recipes.models import (Recipe, Tag, Ingredient, Cart, Favourite,
+                            IngredientForRecipe)
 from users.models import Follow
 from .exceptions import CustomValidation
 
@@ -83,7 +83,8 @@ class UserReadFollowSerializer(BaseUserSerializer):
         recipes_limit = self.context.get('recipes_limit', None)
 
         if recipes_limit:
-            representation['recipes'] = representation['recipes'][:int(recipes_limit)]
+            representation['recipes'] = (representation['recipes']
+                                         [:int(recipes_limit)])
         return representation
 
 
@@ -166,7 +167,8 @@ class FollowUserSerializer(BaseUserSerializer):
         recipes_limit = self.context.get('recipes_limit', None)
 
         if recipes_limit:
-            representation['recipes'] = representation['recipes'][:int(recipes_limit)]
+            representation['recipes'] = (representation['recipes']
+                                         [:int(recipes_limit)])
         return representation
 
 
@@ -223,9 +225,9 @@ class FollowSerializer(UserSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         recipes_limit = self.context.get('recipes_limit', None)
-        # representation['author'] = UserFollowSerializer(instance).data
         if recipes_limit:
-            representation['recipes'] = representation['recipes'][:recipes_limit]
+            representation['recipes'] = (representation['recipes']
+                                         [:recipes_limit])
         return representation
 
 

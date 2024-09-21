@@ -1,15 +1,12 @@
-from django.shortcuts import render
 from django.contrib.auth import get_user_model
-from rest_framework import filters, mixins, status, viewsets, views
+from rest_framework import status, viewsets, views
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework.authtoken.models import Token
-from django.db import IntegrityError
 from djoser.views import UserViewSet as BaseUserViewSet
 from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,13 +17,11 @@ from .serializers import (RecipeSerializer, TokenSerializer,
                           FavouriteSerializer, CartSerializer,
                           UserSerializer, FollowSerializer,
                           AvatarUserSerializer, IngredientNotAmountSerializer,
-                          FollowUserSerializer, UserFollowSerializer,
+                          FollowUserSerializer,
                           UserReadFollowSerializer, RecipeLinkSerializer)
-from users.get_tokens_for_user import get_tokens_for_user
 from users.models import Follow
 from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
 from .filters import RecipeFilter
-from .pagination import FollowPagination
 
 
 User = get_user_model()
@@ -76,7 +71,8 @@ class UserViewSet(BaseUserViewSet):
 
     def get_permissions(self):
         if self.action == 'me':
-            self.permission_classes = [IsAuthenticated, IsCurrentUserOrReadOnly]
+            self.permission_classes = [IsAuthenticated,
+                                       IsCurrentUserOrReadOnly]
         elif self.action == 'retrieve':
             self.permission_classes = [AllowAny]
         else:
