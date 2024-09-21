@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import UniqueConstraint
 
 from foodgram.settings import VALID_USERNAME_CHARACTERS
-
+#
 from .validators import validate_username
 
 
