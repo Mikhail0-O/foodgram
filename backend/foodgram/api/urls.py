@@ -1,13 +1,11 @@
-from rest_framework import routers
 from django.urls import include, path
-# from djoser.views import UserViewSet
+from rest_framework import routers
 
-from .views import (RecipeViewSet, get_token,
-                    TagViewSet, IngredientViewSet,
-                    FavouriteViewSet, CartViewSet,
-                    download_shopping_cart, delete_token,
-                    UserViewSet, AvatarUserViewSet, FollowViewSet,
-                    FollowDestroyUpdateViewSet, RecipeLinkView)
+from .views import (AvatarUserViewSet, CartViewSet, FavouriteViewSet,
+                    FollowDestroyUpdateViewSet, FollowViewSet,
+                    IngredientViewSet, RecipeLinkView, RecipeViewSet,
+                    TagViewSet, UserViewSet, delete_token,
+                    download_shopping_cart, get_token)
 
 
 v1_router = routers.DefaultRouter()
