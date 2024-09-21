@@ -14,7 +14,7 @@ services:
 
   backend:
       # build: ../backend/foodgram/
-      image: mikhailo0/foodgram_backend
+      image: mikhailo0/foodgram_backend_3
       env_file: ../.env
       depends_on:
         - frontend
