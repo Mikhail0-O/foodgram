@@ -178,3 +178,11 @@ MAX_LEN_NAME = 256
 AUTH_USER_MODEL = 'users.CustomUser'
 
 VALID_USERNAME_CHARACTERS = r'^[\w.@+-]+\Z'
+
+# Ограничения по времени готовки
+MIN_COOKING_TIME = 1
+MAX_COOKING_TIME = 32000
+
+# Ограничения по количеству ингредиентов
+MIN_AMOUNT = 1
+MAX_AMOUNT = 32000

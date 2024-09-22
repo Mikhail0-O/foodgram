@@ -13,7 +13,6 @@ from rest_framework.response import Response
 
 from recipes.models import Cart, Favourite, Ingredient, Recipe, Tag
 from users.models import Follow
-
 from .filters import RecipeFilter
 from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
 from .serializers import (AvatarUserSerializer, CartSerializer,
@@ -53,7 +52,7 @@ class FollowViewSet(viewsets.ModelViewSet):
 class AvatarUserViewSet(viewsets.ModelViewSet):
     serializer_class = AvatarUserSerializer
     permission_classes = [IsAuthenticated]
-    queryset = User.objects.all().order_by('id')
+    queryset = User.objects.all()
 
     def get_object(self):
         return self.request.user
@@ -81,32 +80,31 @@ class UserViewSet(BaseUserViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all().order_by('id')
+    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthorOrReadOnly]
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    # search_fields = ('author',)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Tag.objects.all().order_by('id')
+    queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Ingredient.objects.all().order_by('id')
+    queryset = Ingredient.objects.all()
     serializer_class = IngredientNotAmountSerializer
     pagination_class = None
 
 
 class FavouriteViewSet(viewsets.ModelViewSet):
-    queryset = Favourite.objects.all().order_by('id')
+    queryset = Favourite.objects.all()
     serializer_class = FavouriteSerializer
     permission_classes = [IsAuthorOrReadOnly]
 
@@ -126,7 +124,7 @@ class FavouriteViewSet(viewsets.ModelViewSet):
 
 
 class CartViewSet(viewsets.ModelViewSet):
-    queryset = Cart.objects.all().order_by('id')
+    queryset = Cart.objects.all()
     serializer_class = CartSerializer
     permission_classes = [IsAuthorOrReadOnly]
 
@@ -146,10 +144,9 @@ class CartViewSet(viewsets.ModelViewSet):
 
 
 class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
-    queryset = Follow.objects.all().order_by('id')
+    queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     permission_classes = [IsAuthorOrReadOnly]
-    # pagination_class = FollowPagination
 
     def destroy(self, request, *args, **kwargs):
         user_id = self.kwargs.get('user_id')
@@ -170,7 +167,6 @@ class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
         user_id = self.kwargs.get('user_id')
         author = get_object_or_404(User, id=user_id)
         recipes_limit = self.request.query_params.get('recipes_limit', None)
-        print(type(recipes_limit))
         user_data = FollowUserSerializer(
             author, context={'request': request,
                              'recipes_limit': recipes_limit}
@@ -182,7 +178,6 @@ class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         recipes_limit = self.request.query_params.get('recipes_limit', None)
-        print(recipes_limit)
         if recipes_limit is not None:
             context['recipes_limit'] = int(recipes_limit)
         return context
@@ -203,7 +198,6 @@ def get_token(request):
 
 @api_view(['POST'])
 def delete_token(request):
-    print(request.user)
     user = User.objects.filter(username=request.user).first()
     token = Token.objects.get(user=user)
     token.delete()
@@ -240,6 +234,5 @@ class RecipeLinkView(views.APIView):
 
     def get(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
-        print(request)
         serializer = RecipeLinkSerializer(recipe, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

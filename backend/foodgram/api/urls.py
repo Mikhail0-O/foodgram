@@ -13,10 +13,6 @@ v1_router.register('recipes', RecipeViewSet, basename='recipes')
 v1_router.register('tags', TagViewSet, basename='tags')
 v1_router.register('ingredients', IngredientViewSet, basename='ingredients')
 v1_router.register('users', UserViewSet)
-# v1_router.register(
-#     r'recipes/(?P<recipe_id>\d+)/favorite',
-#     FavouriteViewSet, basename='favorite'
-# )
 
 app_name = 'api'
 

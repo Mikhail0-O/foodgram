@@ -4,6 +4,7 @@ from django.db.models import UniqueConstraint
 import shortuuid
 
 from foodgram.settings import MAX_LEN_NAME
+from .validators import cooking_time_validator, amount_validator
 
 
 User = get_user_model()
@@ -22,8 +23,9 @@ class Recipe(models.Model):
         'Tag',
         verbose_name='Тег',
     )
-    cooking_time = models.IntegerField(
-        verbose_name='Время приготовления (минуты)'
+    cooking_time = models.PositiveSmallIntegerField(
+        verbose_name='Время приготовления (минуты)',
+        validators=[cooking_time_validator]
     )
     ingredients = models.ManyToManyField(
         'IngredientForRecipe',
@@ -39,6 +41,7 @@ class Recipe(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -60,6 +63,7 @@ class Tag(models.Model):
     )
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'тег'
         verbose_name_plural = 'Теги'
 
@@ -77,11 +81,9 @@ class Ingredient(models.Model):
         max_length=MAX_LEN_NAME,
         verbose_name='Единицы измерения',
     )
-    # amount = models.IntegerField(
-    #     verbose_name='Количество'
-    # )
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
@@ -95,16 +97,17 @@ class IngredientForRecipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиенты для рецепта',
     )
-    amount = models.IntegerField(
-        verbose_name='Количество'
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество', validators=[amount_validator],
     )
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'ингредиент для рецепта'
         verbose_name_plural = 'Ингредиенты для рецепта'
 
-    # def __str__(self):
-    #     return f'{self.name}'
+    def __str__(self):
+        return f'{self.ingredient.name}'
 
 
 class Cart(models.Model):
@@ -122,6 +125,7 @@ class Cart(models.Model):
     )
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'корзина'
         verbose_name_plural = 'Корзины'
         constraints = [
@@ -148,6 +152,7 @@ class Favourite(models.Model):
     )
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'избранное'
         verbose_name_plural = 'Список избранных рецептов'
         constraints = [
