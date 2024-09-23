@@ -8,7 +8,7 @@ from rest_framework import status, views, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 
 from recipes.models import Cart, Favourite, Ingredient, Recipe, Tag
@@ -18,9 +18,10 @@ from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
 from .serializers import (AvatarUserSerializer, CartSerializer,
                           FavouriteSerializer, FollowSerializer,
                           FollowUserSerializer, IngredientNotAmountSerializer,
-                          RecipeLinkSerializer, RecipeSerializer,
+                          RecipeLinkSerializer,
                           TagSerializer, TokenSerializer,
-                          UserReadFollowSerializer, UserSerializer)
+                          UserReadFollowSerializer, UserSerializer,
+                          RecipeReadSerializer, RecipeCreateUpdateSerializer)
 
 
 User = get_user_model()
@@ -81,7 +82,6 @@ class UserViewSet(BaseUserViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
     permission_classes = [IsAuthorOrReadOnly]
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
@@ -89,6 +89,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return RecipeReadSerializer
+        return RecipeCreateUpdateSerializer
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -198,7 +203,7 @@ def get_token(request):
 
 @api_view(['POST'])
 def delete_token(request):
-    user = User.objects.filter(username=request.user).first()
+    user = request.user
     token = Token.objects.get(user=user)
     token.delete()
     return Response(token.key, status=status.HTTP_204_NO_CONTENT)
