@@ -343,6 +343,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             ingredient_instances.append(ingredient_instance)
 
             recipe.ingredients.add(ingredient_instance.id)
+
         IngredientForRecipe.objects.bulk_create(ingredient_instances)
 
     def create(self, validated_data):
