@@ -12,6 +12,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 
 from recipes.models import Cart, Favourite, Ingredient, Recipe, Tag
+from .pagination import RecipePagination
 from users.models import Follow
 from .filters import RecipeFilter
 from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrReadOnly
@@ -83,7 +84,7 @@ class UserViewSet(BaseUserViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthorOrReadOnly]
-    pagination_class = LimitOffsetPagination
+    pagination_class = RecipePagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
