@@ -9,7 +9,10 @@ BaseUserAdmin.fieldsets += (
 
 
 class UserAdmin(BaseUserAdmin):
-    list_display = ('id', 'username', 'email', 'first_name', 'last_name', 'is_staff')
+    list_display = (
+        'id', 'username', 'email', 'first_name', 'last_name',
+        'is_staff'
+    )
 
 
 class FollowAdmin(admin.ModelAdmin):
