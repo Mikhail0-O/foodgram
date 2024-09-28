@@ -148,9 +148,8 @@ class FollowUserSerializer(BaseUserSerializer):
         if user.is_authenticated:
             if user.followers.filter(author=obj).exists():
                 raise serializers.ValidationError(
-                    {'obj': 'Вы уже подписаны на этого пользователя.'}
+                    {f'{obj}': 'Вы уже подписаны на этого пользователя.'}
                 )
-            Follow.objects.create(user=user, author=obj)
             return user.followers.filter(author=obj).exists()
         return False
 
@@ -213,8 +212,9 @@ class FollowSerializer(UserSerializer):
         return obj.recipes.all().count()
 
     def validate(self, data):
-        author_id = self.context['request'].parser_context['kwargs']['user_id']
-        if self.context['request'].user.id == author_id:
+        requset = self.context['request']
+        author_id = requset.parser_context['kwargs']['user_id']
+        if requset.user.id == author_id:
             raise serializers.ValidationError(
                 'Вы не можете подписаться на себя.'
             )
@@ -295,19 +295,12 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
-        if user.is_authenticated:
-            cart = user.carts.filter(recipe=obj).exists()
-            if cart:
-                return True
-        return False
+        return user.is_authenticated and user.carts.filter(recipe=obj).exists()
 
     def get_is_favorited(self, obj):
         user = self.context['request'].user
-        if user.is_authenticated:
-            cart = user.favorites.filter(recipe=obj).exists()
-            if cart:
-                return True
-        return False
+        return user.is_authenticated and user.favorites.filter(
+            recipe=obj).exists()
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):

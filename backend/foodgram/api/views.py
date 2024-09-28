@@ -33,7 +33,7 @@ class FollowViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
+        return self.request.user.followers.all()
 
     def list(self, request, *args, **kwargs):
         user = request.user
@@ -171,12 +171,14 @@ class FollowDestroyUpdateViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         user_id = self.kwargs.get('user_id')
+        user = request.user
         author = get_object_or_404(User, id=user_id)
         recipes_limit = self.request.query_params.get('recipes_limit', None)
         user_data = FollowUserSerializer(
             author, context={'request': request,
                              'recipes_limit': recipes_limit}
         ).data
+        Follow.objects.create(user=user, author=author)
         return Response(
             user_data, status=status.HTTP_201_CREATED
         )
