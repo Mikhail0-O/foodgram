@@ -338,6 +338,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
                 ),
                 amount=ingredient_data['amount'],
             )
+
             recipe.ingredients.add(ing.id)
 
     def create(self, validated_data):
