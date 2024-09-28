@@ -339,19 +339,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
                 amount=ingredient_data['amount'],
             )
             recipe.ingredients.add(ing.id)
-        # ingredient_instances = []
-        # for ingredient_data in ingredients_data:
-        #     ingredient = get_object_or_404(
-        #         Ingredient, id=ingredient_data['id'].id
-        #     )
-        #     ingredient_instance = IngredientForRecipe(
-        #         ingredient=ingredient,
-        #         amount=ingredient_data['amount'],
-        #     )
-        #     ingredient_instances.append(ingredient_instance)
-
-        #     recipe.ingredients.add(ingredient_instance.id)
-        # IngredientForRecipe.objects.bulk_create(ingredient_instances)
 
     def create(self, validated_data):
         tags_data = validated_data.pop('tags')
